@@ -2,12 +2,12 @@ import express from "express";
 import dotenv from "dotenv";
 import {authRouter} from './src/routes/auth.route.js'
 import { authenticateToken } from "./src/middlewares/auth.middleware.js";
-
+import cors from "cors"
 dotenv.config();
 const app = express();
 const port = process.env.PORT || 4000;
 app.use(express.json());
-
+app.use(cors());
 app.use("/auth", authRouter);
 
 // Example protected route
