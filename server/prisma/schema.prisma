@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model user {
+  id              String   @id @default(uuid())
+  username        String   @unique
+  first_name      String
+  last_name       String
+  email           String   @unique
+  profession      String?
+  role            Role     @default(USER)
+  authProvider    AuthType @default(LOCAL)
+  passwordHash    String?
+  neighborhoodId  String?  
+  neighborhood    neighborhood? @relation(fields: [neighborhoodId], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model neighborhood {
+  id                   String   @id @default(uuid())
+  name                 String   @unique
+  city                 String
+  state                String
+  sentimentScore       Float    @default(0)
+  electedRepresentative String?
+  users                user[]
+  country              String   
+}
+
+enum Role {
+  ADMIN
+  AGENT
+  USER
+}
+
+enum AuthType {
+  LOCAL
+  GOOGLE
+  FACEBOOK
+}
