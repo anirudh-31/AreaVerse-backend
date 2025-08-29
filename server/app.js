@@ -10,7 +10,20 @@ const app  = express();
 const port = process.env.PORT || 4000;
 
 app.use(express.json());
-app.use(cors());
+
+const allowedOrigins = ["http://localhost:3000", "https://areaverse-4e8b9.web.app/"];
+app.use(cors({
+  origin: function (origin, callback) {
+    console.log(origin)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, origin);
+    } else {
+      console.log(origin)
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true
+}));
 
 app.use(cookieParser())
 app.use("/auth", authRouter);
