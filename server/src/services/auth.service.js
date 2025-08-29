@@ -128,6 +128,9 @@ async function loginUser(userEmailOrUserName, password){
         throw new Error("Invalid credentials");
     }
 
+    // delete any existing refresh tokens ----- doesn't allow multiple sessions.
+    await prisma.refreshtoken.deleteMany({ where: { userId: user.id } });
+
     // If the passwords match, create a new auth token for the user.
     const token = generateAccessToken({
         id: user.id,
@@ -159,6 +162,21 @@ async function loginUser(userEmailOrUserName, password){
 }
 
 /**
+ * Function to log the user out of the system.
+ * @param {Request} req 
+ * @returns 
+ */
+async function logoutUser(req){
+    const refreshToken = req.cookies.refreshToken;
+    if(refreshToken){
+        await prisma.refreshtoken.deleteMany({
+            where: {token: refreshToken}
+        })
+    }
+    return true;
+}
+
+/**
  * Function to generate a new auth token for the user.
  * @param {Request}  req 
  * @param {Response} res 
@@ -185,11 +203,12 @@ async function refreshAuthToken(req,){
        throw new Error("Invalid refresh token");
     }
     // retrive the user details pertaining to the token
-    const user = prisma.user.findFirst({
+    const user = await prisma.user.findFirst({
         where : {id: storedToken.userId},
         select: { id: true, username: true, email: true, role: true }
     })
 
+    
     // generate a new access token for the user
     const token = generateAccessToken({
         id      : user.id,
@@ -206,5 +225,6 @@ async function refreshAuthToken(req,){
 export {
     registerNewUser,
     loginUser,
+    logoutUser,
     refreshAuthToken
 }
