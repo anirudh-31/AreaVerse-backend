@@ -128,6 +128,7 @@ async function loginUser(userEmailOrUserName, password){
         throw new Error("Invalid credentials");
     }
 
+    console.log("Deleting refresh tokens for user:", user.id); 
     // delete any existing refresh tokens ----- doesn't allow multiple sessions.
     await prisma.refreshtoken.deleteMany({ where: { userId: user.id } });
 
