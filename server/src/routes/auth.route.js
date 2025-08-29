@@ -3,9 +3,9 @@ import { getAuthToken, login, logout, signup } from "../controllers/auth.control
 
 const authRouter = express.Router();
 
-authRouter.post("/signup", signup);
-authRouter.post("/login", login);
+authRouter.post("/signup" , signup);
+authRouter.post("/login"  , login);
 authRouter.post("/refresh", getAuthToken)
-authRouter.post("/logout", logout);
+authRouter.post("/logout" , logout);
 
 export {authRouter};

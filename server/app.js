@@ -16,7 +16,7 @@ app.use(cookieParser())
 app.use("/auth", authRouter);
 
 // Example protected route
-app.get("/me", (req, res) => {
+app.get("/me", authenticateToken, (req, res) => {
   res.json({ message: "Welcome!", user: req.user });
 });
 
