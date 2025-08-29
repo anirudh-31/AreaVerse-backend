@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import {prisma} from '../prisma/client.prisma.js';
-import { generateAccessToken } from "../utils/jwt.js";
+import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
 
 
 /**
@@ -72,9 +72,20 @@ async function registerNewUser(data) {
     });
 
     // generate a new auth token for the user.
-    const token = generateAccessToken({ id: user.id, username: user.username });
+    const token = generateAccessToken({ id: user.id, username: user.username, role: user.role });
+    // generate a new refresh token for the user.
+    const refreshToken = generateRefreshToken({ id: user.id });
+    // store the generate token in the refreshToken database.
+    await prisma.refreshtoken.create({
+        data: {
+            token    : refreshToken,
+            userId   : user.id,
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        }
+    })
 
-    return { token, user };
+
+    return { token, user, refreshToken };
 }
 
 /**
@@ -95,13 +106,14 @@ async function loginUser(userEmailOrUserName, password){
                                 email: userEmailOrUserName
                             }
                         ]
-                }
+                },
     })
 
     // If no record is found respond with an error stating that invalid credentials were passed.
     if (!user){
         throw new Error("Invalid credentials");
     }
+    
     
     // If the user had not signed with a password, i.e, used a social login such as google or facebook, tell the user to login with the same provider.
     if(user.authProvider !== 'LOCAL'){
@@ -117,14 +129,26 @@ async function loginUser(userEmailOrUserName, password){
     }
 
     // If the passwords match, create a new auth token for the user.
-    const authToken = generateAccessToken({
+    const token = generateAccessToken({
         id: user.id,
         username: user.username,
         email: user.email,
         role:  user.role
     })
+    // Create a refresh token for the user.
+    const refreshToken = generateRefreshToken({ id: user.id });
+    // store the generate token in the refreshToken database.
+    await prisma.refreshtoken.create({
+        data: {
+            token    : refreshToken,
+            userId   : user.id,
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        }
+    })
 
-    return { authToken, 
+
+    return { token,
+             refreshToken,
              user: { 
                         id: user.id, 
                         username: user.username, 
@@ -132,10 +156,55 @@ async function loginUser(userEmailOrUserName, password){
                         role: user.role 
                     } 
             };
+}
 
+/**
+ * Function to generate a new auth token for the user.
+ * @param {Request}  req 
+ * @param {Response} res 
+ * @returns {Response} containing the new auth token
+ */
+async function refreshAuthToken(req,){
+    const refreshToken = req.cookies.refreshToken;
+    // If no refresh token is found in request, revert with a 401 unauthorized error
+    if(!refreshToken){
+        throw new Error("No refresh token found");
+    }
+
+    // If refresh token is found in the request, check if it exits in the database.
+    const storedToken = await prisma.refreshtoken.findUnique({
+        where: {token: refreshToken}
+    }) 
+    // If no stored token is found, revert with a 401 unauthorized error.
+    if(!storedToken){
+        throw new Error("No refresh token found");
+    }
+    // Validate the refresh token.
+    if(storedToken.revoked || storedToken.expiresAt < new Date()){
+        // If the refresh token is invalid, revert with a 403 Forbidden status.
+       throw new Error("Invalid refresh token");
+    }
+    // retrive the user details pertaining to the token
+    const user = prisma.user.findFirst({
+        where : {id: storedToken.userId},
+        select: { id: true, username: true, email: true, role: true }
+    })
+
+    // generate a new access token for the user
+    const token = generateAccessToken({
+        id      : user.id,
+        username: user.username,
+        email   : user.email,
+        role    :  user.role
+    })
+
+    return {
+        token
+    }
 }
 
 export {
     registerNewUser,
-    loginUser
+    loginUser,
+    refreshAuthToken
 }
