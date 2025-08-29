@@ -17,12 +17,13 @@ async function registerNewUser(data) {
             OR: [{ username }, { email }]
         }
     });
+    
     // If a record already exists, then throw an error stating the same.
     if (userExists) {
         throw new Error("User already exists");
     }
     // If the user does not exist, then register the user.
-
+    
     // Retrive the neighborhood id for the city + state + area that the user provided.
     let resolvedNeighborhoodId = neighborhoodId;
     if (!resolvedNeighborhoodId && area && city && state) {
@@ -30,7 +31,7 @@ async function registerNewUser(data) {
         let neighborhood = await prisma.neighborhood.findFirst({
             where: { name: area, city, state }
         });
-
+        
         // if it does not exists already, then create a record for it and use the neighborhood id.
         if (!neighborhood) {
             neighborhood = await prisma.neighborhood.create({
@@ -38,13 +39,14 @@ async function registerNewUser(data) {
                     name: area,
                     city,
                     state,
+                    country: "India",
                     sentimentScore: 0
                 }
             });
         }
         resolvedNeighborhoodId = neighborhood.id;
     }
-
+    
     // If the required neighborhood details are not provided, then throw and error stating the same
     if (!resolvedNeighborhoodId) {
         throw new Error("Neighborhood information is required (name + city + state).");
