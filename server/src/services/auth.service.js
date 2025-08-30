@@ -9,7 +9,7 @@ import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
  * @returns A payload containing the signed auth token and the user infomation
  */
 async function registerNewUser(data) {
-    const { username, first_name, last_name, email, password, profession, city, state, area, neighborhoodId } = data;
+    const { username, first_name, last_name, email, password, profession, city, state, area, neighborhoodId, dateOfBirth } = data;
 
     // Check if a record with the same username or email exists
     const userExists = await prisma.user.findFirst({
@@ -62,6 +62,7 @@ async function registerNewUser(data) {
             first_name,
             last_name,
             email,
+            dateOfBirth,
             profession,
             neighborhoodId: resolvedNeighborhoodId,
             role: "USER",
@@ -202,7 +203,8 @@ async function refreshAuthToken(req,){
         // If the refresh token is invalid, revert with a 403 Forbidden status.
        throw new Error("Invalid refresh token");
     }
-    // retrive the user details pertaining to the token
+    
+    // retrieve the user details pertaining to the token
     const user = await prisma.user.findFirst({
         where : {id: storedToken.userId},
         select: { id: true, username: true, email: true, role: true }

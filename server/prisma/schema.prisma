@@ -14,6 +14,7 @@ model user {
   last_name       String
   email           String   @unique
   profession      String?
+  dateOfBirth     DateTime?
   role            Role     @default(USER)
   authProvider    AuthType @default(LOCAL)
   passwordHash    String?

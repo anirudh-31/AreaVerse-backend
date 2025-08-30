@@ -4,6 +4,7 @@ import {authRouter} from './src/routes/auth.route.js'
 import { authenticateToken } from "./src/middlewares/auth.middleware.js";
 import cors from "cors"
 import cookieParser from "cookie-parser";
+import { userRouter } from "./src/routes/user.route.js";
 
 dotenv.config();
 const app  = express();
@@ -25,6 +26,7 @@ app.use(cors({
 
 app.use(cookieParser())
 app.use("/auth", authRouter);
+app.use("/user", userRouter);
 
 // Example protected route
 app.get("/me", authenticateToken, (req, res) => {

@@ -18,7 +18,7 @@ function authenticateToken(req, res, next) {
     // If it is not valid respond with a 403 Forbidden error.
     try{
         const tokenPayload = verifyAccessToken(token)
-        req.user           = tokenPayload;
+        req.user           = tokenPayload.user;
         next();
     } catch(err){
         return res.status(403).json({

@@ -11,20 +11,20 @@ const REFRESH_EXPIRES = process.env.REFRES_TOKEN_EXPIRES || '7d';
 
 /**
  * Function to generate the access token for the specified user.
- * @param {String} userId 
+ * @param {String} user
  * @returns AccessToken
  */
-function generateAccessToken (userId) {
-    return jwt.sign({userId}, ACCESS_TOKEN, { expiresIn: ACCESS_EXPIRES});
+function generateAccessToken (user) {
+    return jwt.sign({user}, ACCESS_TOKEN, { expiresIn: ACCESS_EXPIRES});
 };
 
 /**
  * Function to generate the refresh token for the specified user.
- * @param {String} userId 
+ * @param {String} user
  * @returns RefreshToken
  */
-function generateRefreshToken (userId) {
-    return jwt.sign({userId}, REFRESH_TOKEN, { expiresIn: REFRESH_EXPIRES});
+function generateRefreshToken (user) {
+    return jwt.sign({user}, REFRESH_TOKEN, { expiresIn: REFRESH_EXPIRES});
 }
 
 /**
