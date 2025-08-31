@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import {prisma} from '../prisma/client.prisma.js';
-import { generateAccessToken, generateRefreshToken } from "../utils/jwt.js";
+import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from "../utils/jwt.js";
 
 
 /**
@@ -183,44 +183,47 @@ async function logoutUser(req){
  * @param {Response} res 
  * @returns {Response} containing the new auth token
  */
-async function refreshAuthToken(req,){
+async function refreshAuthToken(req){
     const refreshToken = req.cookies.refreshToken;
     // If no refresh token is found in request, revert with a 401 unauthorized error
     if(!refreshToken){
         throw new Error("No refresh token found");
     }
+    const isRefreshTokenValid = verifyRefreshToken(refreshToken);
+    if(isRefreshTokenValid) {
+        // If refresh token is found in the request, check if it exits in the database.
+        const storedToken = await prisma.refreshtoken.findUnique({
+            where: {token: refreshToken}
+        }) 
+        // If no stored token is found, revert with a 401 unauthorized error.
+        if(!storedToken){
+            throw new Error("No refresh token found");
+        }
+        // Validate the refresh token.
+        if(storedToken.revoked || storedToken.expiresAt < new Date()){
+            // If the refresh token is invalid, revert with a 403 Forbidden status.
+        throw new Error("Invalid refresh token");
+        }
+        
+        // retrieve the user details pertaining to the token
+        const user = await prisma.user.findFirst({
+            where : {id: storedToken.userId},
+            select: { id: true, username: true, email: true, role: true }
+        })
 
-    // If refresh token is found in the request, check if it exits in the database.
-    const storedToken = await prisma.refreshtoken.findUnique({
-        where: {token: refreshToken}
-    }) 
-    // If no stored token is found, revert with a 401 unauthorized error.
-    if(!storedToken){
-        throw new Error("No refresh token found");
-    }
-    // Validate the refresh token.
-    if(storedToken.revoked || storedToken.expiresAt < new Date()){
-        // If the refresh token is invalid, revert with a 403 Forbidden status.
-       throw new Error("Invalid refresh token");
-    }
-    
-    // retrieve the user details pertaining to the token
-    const user = await prisma.user.findFirst({
-        where : {id: storedToken.userId},
-        select: { id: true, username: true, email: true, role: true }
-    })
-
-    
-    // generate a new access token for the user
-    const token = generateAccessToken({
-        id      : user.id,
-        username: user.username,
-        email   : user.email,
-        role    :  user.role
-    })
-
-    return {
-        token
+        
+        // generate a new access token for the user
+        const token = generateAccessToken({
+            id      : user.id,
+            username: user.username,
+            email   : user.email,
+            role    :  user.role
+        })
+        return {
+                    token
+               }
+    } else {
+        throw new Error("Invlaid or expired refresh token")
     }
 }
 
