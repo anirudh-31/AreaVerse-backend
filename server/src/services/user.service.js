@@ -16,6 +16,7 @@ async function getMe(userId){
             profession   : true,
             createdAt    : true,
             dateOfBirth  : true,
+            isVerified   : true,
             neighborhood : {
                                 select : {
                                     name   : true,
