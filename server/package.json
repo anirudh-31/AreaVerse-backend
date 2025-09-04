@@ -2,7 +2,6 @@
   "name": "server",
   "version": "1.0.0",
   "main": "app.js",
-  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "devstart": "nodemon app.js",
@@ -24,7 +23,7 @@
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "nanoid": "^5.1.5",
-    "nodemailer": "^7.0.5",
+    "nodemailer": "^7.0.6",
     "nodemon": "^3.1.10"
   },
   "devDependencies": {

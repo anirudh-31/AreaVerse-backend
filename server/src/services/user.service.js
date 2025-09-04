@@ -25,16 +25,6 @@ async function getMe(userId){
                                 }  
                             }
         },
-        // include: {
-        //     neighborhood : {
-        //         select :{
-        //             name   : true,
-        //             state  : true,
-        //             city   : true,
-        //             country: true
-        //         }  
-        //     }
-        // } 
     })
     if (!userDetails){
         throw new Error("User not found");
@@ -43,6 +33,9 @@ async function getMe(userId){
     return userDetails;
 }
 
+async function updateUserDetails(details) {
+    const {} = details
+}
 export {
     getMe
 }

@@ -13,9 +13,9 @@ const port = process.env.PORT || 4000;
 app.use(express.json());
 
 const allowedOrigins = ["http://localhost:3000", "https://areaverse-4e8b9.web.app"];
+
 app.use(cors({
   origin: function (origin, callback) {
-    console.log(origin)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, origin);
     } else {

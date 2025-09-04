@@ -8,21 +8,24 @@ datasource db {
 }
 
 model user {
-  id              String   @id @default(uuid())
-  username        String   @unique
-  first_name      String
-  last_name       String
-  email           String   @unique
-  profession      String?
-  dateOfBirth     DateTime?
-  role            Role     @default(USER)
-  authProvider    AuthType @default(LOCAL)
-  passwordHash    String?
-  neighborhoodId  String?  
-  neighborhood    neighborhood? @relation(fields: [neighborhoodId], references: [id])
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  refreshTokens   refreshtoken[]
+  id                String   @id @default(uuid())
+  username          String   @unique
+  first_name        String
+  last_name         String
+  email             String   @unique
+  profession        String?
+  dateOfBirth       DateTime?
+  isVerified        Boolean  @default(false)
+  verificationToken String?
+  verificationCode  String?
+  role              Role     @default(USER)
+  authProvider      AuthType @default(LOCAL)
+  passwordHash      String?
+  neighborhoodId    String?  
+  neighborhood      neighborhood? @relation(fields: [neighborhoodId], references: [id])
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  refreshTokens     refreshtoken[]
 }
 
 model neighborhood {

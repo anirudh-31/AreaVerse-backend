@@ -1,4 +1,4 @@
-import { loginUser, logoutUser, refreshAuthToken, registerNewUser } from "../services/auth.service.js";
+import { loginUser, logoutUser, refreshAuthToken, registerNewUser, verifyUserEmail } from "../services/auth.service.js";
 
 async function signup(req, res){
     try{
@@ -51,6 +51,7 @@ async function getAuthToken(req, res){
         res.status(401).json({ error: err.message });
     }
 }
+
 async function logout(req, res){
     try{
         const logoutStatus = await logoutUser(req);
@@ -63,9 +64,19 @@ async function logout(req, res){
     }
 }
 
+async function verifyEmail(req, res){
+    try{
+        const verificationStatus = await verifyUserEmail(req);
+        res.status(200).json(verificationStatus);
+    }catch(err){
+        res.status(400).json({message: err.message})
+    }
+}
+
 export {
     signup,
     login,
     logout,
-    getAuthToken
+    getAuthToken,
+    verifyEmail
 }

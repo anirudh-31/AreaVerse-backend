@@ -1,6 +1,8 @@
 import bcrypt from "bcryptjs";
+import crypto from 'crypto'
 import {prisma} from '../prisma/client.prisma.js';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from "../utils/jwt.js";
+import { sendVerificationEmail } from "../middlewares/sendVerificationEmail.js";
 
 
 /**
@@ -54,7 +56,10 @@ async function registerNewUser(data) {
 
     // Hash the password for storage
     const hashedPassword = await bcrypt.hash(password, 10);
-    
+    // verification token
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+    // verification code
+    const verificationCode  = crypto.randomInt(100000, 1000000).toString();
     // Create a new user record
     const user = await prisma.user.create({
         data: {
@@ -67,10 +72,19 @@ async function registerNewUser(data) {
             neighborhoodId: resolvedNeighborhoodId,
             role: "USER",
             authProvider: "LOCAL",
-            passwordHash: hashedPassword
+            passwordHash: hashedPassword,
+            verificationToken,
+            verificationCode
         },
-        select: { id: true, username: true, email: true, role: true }
+        select: { id: true, username: true, email: true, role: true, first_name: true, last_name: true }
     });
+
+    await sendVerificationEmail({
+        to               : email,
+        userName         : first_name + " " + last_name,
+        verificationLink : `${process.env.APP_URL}/verify-email?token=${verificationToken}`,
+        verificationCode
+    })
 
     // generate a new auth token for the user.
     const token = generateAccessToken({ id: user.id, username: user.username, role: user.role });
@@ -227,9 +241,38 @@ async function refreshAuthToken(req){
     }
 }
 
+async function verifyUserEmail(req){
+  try{
+    const {token, code} = req.body;
+
+    if (!token && !code){
+        throw new Error("Verification token or Verification Code not found in request.")
+    }
+
+    const user = await prisma.user.findFirst(
+                                             { 
+                                                where : { verificationToken: token },
+                                                select: { verificationCode: true, id: true}
+                                             },
+                                            );
+    if (!user)  throw new Error("Invalid or expired token." );
+    if ( code !== user.verificationCode) throw new Error("Invalid code.");
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { isVerified: true, verificationToken: null, verificationCode: null }
+    });
+
+    return { message: "Email verified successfully" };
+  } catch (err) {
+    throw new Error(err.message);
+  }
+}
+
 export {
     registerNewUser,
     loginUser,
     logoutUser,
-    refreshAuthToken
+    refreshAuthToken,
+    verifyUserEmail
 }
