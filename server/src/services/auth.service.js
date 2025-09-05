@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import crypto from 'crypto'
 import {prisma} from '../prisma/client.prisma.js';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from "../utils/jwt.js";
-import { sendVerificationEmail } from "../middlewares/sendVerificationEmail.js";
+import { sendVerificationEmail, sendPasswordResetEmail } from "../middlewares/sendEmail.js";
 
 
 /**
@@ -84,7 +84,7 @@ async function registerNewUser(data) {
         userName         : first_name + " " + last_name,
         verificationLink : `${process.env.APP_URL}/verify-email?token=${verificationToken}`,
         verificationCode
-    })
+    });
 
     // generate a new auth token for the user.
     const token = generateAccessToken({ id: user.id, username: user.username, role: user.role });
@@ -237,7 +237,7 @@ async function refreshAuthToken(req){
                     token
                }
     } else {
-        throw new Error("Invlaid or expired refresh token")
+        throw new Error("Invalid or expired refresh token")
     }
 }
 
@@ -269,10 +269,50 @@ async function verifyUserEmail(req){
   }
 }
 
+async function requestPasswordReset(req){
+    try{
+        const { username } = req.body;
+
+        const user = await prisma.user.findUnique({
+            where: {
+                username: username
+            },
+            select : {
+                first_name: true,
+                last_name : true,
+                email     : true,
+                id        : true
+            }
+        });
+        if (!user) throw new Error("No user found with the specifed username" );
+
+        const resetToken = crypto.randomBytes(32).toString("hex");
+        const resetExpiry = new Date(Date.now() + 1000 * 60 * 15); 
+
+        await sendPasswordResetEmail({
+                                        to               : user.email,
+                                        userName         : user.first_name + " " + user.last_name,
+                                        resetLink       : `${process.env.APP_URL}/reset-password?token=${resetToken}`,
+                                    });
+        
+
+        await prisma.user.update({
+                                    where: { id: user.id },
+                                    data: { resetToken, resetTokenExpiry: resetExpiry }
+                                });
+        return {
+            message: "Request submitted successfully" 
+        }
+    }catch(err){
+        throw new Error(err.message)
+    }
+}
+
 export {
     registerNewUser,
     loginUser,
     logoutUser,
     refreshAuthToken,
-    verifyUserEmail
+    verifyUserEmail,
+    requestPasswordReset
 }

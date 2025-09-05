@@ -1,4 +1,4 @@
-import { loginUser, logoutUser, refreshAuthToken, registerNewUser, verifyUserEmail } from "../services/auth.service.js";
+import { loginUser, logoutUser, refreshAuthToken, registerNewUser, requestPasswordReset, verifyUserEmail } from "../services/auth.service.js";
 
 async function signup(req, res){
     try{
@@ -69,6 +69,15 @@ async function verifyEmail(req, res){
         const verificationStatus = await verifyUserEmail(req);
         res.status(200).json(verificationStatus);
     }catch(err){
+        res.status(400).json({message: err.message});
+    }
+}
+
+async function passwordResetRequest(req, res){
+    try{
+        const response = await requestPasswordReset(req);
+        res.status(200).json(response)
+    }catch(err){
         res.status(400).json({message: err.message})
     }
 }
@@ -78,5 +87,6 @@ export {
     login,
     logout,
     getAuthToken,
-    verifyEmail
+    verifyEmail,
+    passwordResetRequest
 }

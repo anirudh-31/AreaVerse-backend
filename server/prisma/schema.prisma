@@ -18,6 +18,8 @@ model user {
   isVerified        Boolean  @default(false)
   verificationToken String?
   verificationCode  String?
+  resetToken        String?
+  resetTokenExpiry  DateTime?
   role              Role     @default(USER)
   authProvider      AuthType @default(LOCAL)
   passwordHash      String?
