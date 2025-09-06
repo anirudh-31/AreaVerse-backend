@@ -36,8 +36,25 @@ function getPassowordResetEmail(data) {
     return emailTemplate;
 }
 
+/**
+ * Fucntion to create the password reset alert email.
+ * @param {string} template HTML template
+ * @param {object} data { userName, companyName, logoUrl, resetLink, supportEmail, unsubscribeLink }
+ */
+function getPasswordResetAlertEmail(data) {
+    let emailTemplate = fs.readFileSync(
+        path.join(path.resolve(path.dirname('')), 'src' ,'assets', 'password_reset_alert.html'),
+        'utf-8'
+    );
+    Object.keys(data).forEach((key) => {
+        const regex = new RegExp(`{{${key}}}`, 'g');
+        emailTemplate = emailTemplate.replace(regex, data[key]);
+    });
+    return emailTemplate;
+}
 
 export {
     getVerificationEmail,
-    getPassowordResetEmail
+    getPassowordResetEmail,
+    getPasswordResetAlertEmail
 }

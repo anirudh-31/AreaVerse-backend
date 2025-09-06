@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import crypto from 'crypto'
 import {prisma} from '../prisma/client.prisma.js';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from "../utils/jwt.js";
-import { sendVerificationEmail, sendPasswordResetEmail } from "../middlewares/sendEmail.js";
+import { sendVerificationEmail, sendPasswordResetEmail, sendPasswordResetAlert } from "../middlewares/sendEmail.js";
 
 
 /**
@@ -308,11 +308,52 @@ async function requestPasswordReset(req){
     }
 }
 
+async function passwordReset(req){
+    try{
+        const { resetToken, password } = req.body;
+        
+        
+        const user = await prisma.user.findFirst({
+            where : {
+                        resetToken      : resetToken, 
+                        resetTokenExpiry: {
+                            gte: new Date()
+                        }},
+            select: {id: true, email: true, first_name: true, last_name: true}
+        })
+
+        if(!user) throw new Error("Invalid or expired token");
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        await prisma.user.update({
+            where: { id: user.id },
+            data : {
+                passwordHash     : hashedPassword,
+                resetToken       : null,
+                resetTokenExpiry : null
+            }
+        });
+
+        await sendPasswordResetAlert({
+                                        to               : user.email,
+                                        userName         : user.first_name + " " + user.last_name,
+                                        resetLink       : `${process.env.APP_URL}/request-passoword-reset`,
+                                    });
+        return {
+            message: "Password reset successful."
+        }
+    }catch(err){
+        throw new Error(err.message)
+    }
+}
+
 export {
     registerNewUser,
     loginUser,
     logoutUser,
     refreshAuthToken,
     verifyUserEmail,
-    requestPasswordReset
+    requestPasswordReset,
+    passwordReset
 }
