@@ -1,6 +1,7 @@
 import {verifyAccessToken} from '../utils/jwt.js'
 
 function authenticateToken(req, res, next) {
+    
     const authHeader = req.headers['authorization'] || req.headers['Authorization'];
     const token      = authHeader && authHeader.split(' ')[1];
     
@@ -17,7 +18,7 @@ function authenticateToken(req, res, next) {
     // add it the the incomming request and move on to the next process.
     // If it is not valid respond with a 403 Forbidden error.
     try{
-        const tokenPayload = verifyAccessToken(token)
+        const tokenPayload = verifyAccessToken(token);
         req.user           = tokenPayload.user;
         next();
     } catch(err){

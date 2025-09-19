@@ -5,6 +5,8 @@ import { authenticateToken } from "./src/middlewares/auth.middleware.js";
 import cors from "cors"
 import cookieParser from "cookie-parser";
 import { userRouter } from "./src/routes/user.route.js";
+import imageRouter from "./src/routes/image.route.js";
+import postRouter from "./src/routes/post.route.js";
 
 dotenv.config();
 const app  = express();
@@ -25,9 +27,13 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(cookieParser())
-app.use("/auth", authRouter);
-app.use("/user", userRouter);
+app.use(cookieParser());
+
+// ROUTES
+app.use("/auth"  , authRouter );
+app.use("/user"  , userRouter );
+app.use("/image" , imageRouter);
+app.use("/report", postRouter );
 
 // Example protected route
 app.get("/me", authenticateToken, (req, res) => {
