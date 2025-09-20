@@ -28,6 +28,8 @@ model user {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   refreshTokens     refreshtoken[]
+  posts             post[]
+  postEdits         posthistory[]
 }
 
 model neighborhood {
@@ -51,6 +53,58 @@ model refreshtoken {
   revoked     Boolean  @default(false)
 
   @@index([userId])
+}
+
+model post {
+  id          String     @id @default(uuid())
+  type        PostType
+  severity    Severity?
+  description String
+  category    String
+  status      PostStatus @default(REPORTED)
+  feedback    String?
+  user_id     String
+  user        user       @relation(fields: [user_id], references: [id])
+  images      image[]
+  histories   posthistory[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model image {
+  id     String @id @default(uuid())
+  url    String 
+  postId String
+  post   post   @relation(fields: [postId], references: [id])
+}
+
+model posthistory {
+  id        String     @id @default(uuid())
+  postId    String
+  post      post       @relation(fields: [postId], references: [id])
+  status    PostStatus
+  changedBy String     
+  user      user       @relation(fields: [changedBy], references: [id])
+  message   String?
+  createdAt DateTime   @default(now())
+}
+
+enum Severity{
+  LOW
+  MEDIUM
+  CRITICAL
+}
+
+enum PostType {
+  ISSUE
+  QUERY
+  GENERAL
+}
+enum PostStatus {
+  REPORTED
+  UNDER_REVIEW
+  APPROVED
+  MORE_INFO_NEEDED
 }
 
 enum Role {
