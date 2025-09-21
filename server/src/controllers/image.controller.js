@@ -1,6 +1,10 @@
 import { generateUploadURL } from "../services/image.service.js"
 
-
+/**
+ * Function to get the signed URL for image uploads.
+ * @param {*} req 
+ * @param {*} res 
+ */
 async function getSignedImageUploadURL(req, res) {
     try {
         const { fileName, fileType } = req.body;
@@ -12,7 +16,6 @@ async function getSignedImageUploadURL(req, res) {
             error: err.message
         })
     }
-
 }
 
 export {

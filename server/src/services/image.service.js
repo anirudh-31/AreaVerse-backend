@@ -28,6 +28,17 @@ async function generateUploadURL(fileName, fileType, userId){
     }
 }
 
+/**
+ * Function to generate a signed download URL for the image.
+ * @param {String} filePath 
+ */
+async function generateDownloadURL(filePath){
+    const { data, error } = await client.storage.from('post-images').createSignedUrl(filePath, 60 * 60);
+    if ( error ) throw error;
+    return data.signedUrl;
+}
+
 export {
-    generateUploadURL
+    generateUploadURL,
+    generateDownloadURL
 }

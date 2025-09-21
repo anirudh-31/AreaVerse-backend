@@ -58,6 +58,7 @@ model refreshtoken {
 model post {
   id          String     @id @default(uuid())
   type        PostType
+  title       String
   severity    Severity?
   description String
   category    String
