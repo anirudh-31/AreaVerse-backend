@@ -49,7 +49,7 @@ async function requireAdmin(req, res, next){
         req.user = user;
         next();
     } catch(err){
-        return res.status(403).json({
+        return res.status(401).json({
             error:  err.message || 'Invalid or expired token'
         })
     };

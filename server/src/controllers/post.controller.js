@@ -1,4 +1,4 @@
-import { createPost, getPost, getReviewQueuePosts } from "../services/post.service.js"
+import { createPost, getPost, getReviewQueuePosts, updateStatus } from "../services/post.service.js"
 
 async function createNewPost(req, res){
     try{
@@ -29,8 +29,19 @@ async function fetchReviewQueue(req, res){
         const result = await getReviewQueuePosts(page, pageSize);
         res.status(200).json(result);
     }catch( error ){
-        res.status(403).json({
+        res.status(500).json({
             message: error.message
+        })
+    }
+}
+
+async function updatePostStatus(req, res){
+    try {
+        const response = await updateStatus(req);
+        res.status(200).send(response);
+    } catch (error) {
+        res.status(500).json({
+            error: error.message
         })
     }
 }
@@ -38,5 +49,6 @@ async function fetchReviewQueue(req, res){
 export {
     createNewPost,
     getReport,
-    fetchReviewQueue
+    fetchReviewQueue,
+    updatePostStatus
 }

@@ -50,14 +50,47 @@ async function createPost(req) {
  * @param {JSON} user 
  */
 async function getPost(postId, user){
+    let baseSelect = {
+            id         : true,
+            title      : true,
+            severity   : true,
+            category   : true,
+            description: true,
+            type       : true,
+            createdAt  : true,
+            status     : true,
+            images: true, 
+            user  : {
+                select : {
+                    id: true,
+                    first_name: true,
+                    last_name: true,
+                }
+            },
+        }
+    const isPriveleged = (
+        user.role === 'ADMIN' ||
+        await prisma.post.findFirst({
+            where: {
+                id: postId,
+                user_id: user.id
+            }
+        })
+    )
+    if (isPriveleged) {
+        baseSelect.histories = {
+            select: {
+                status   : true,
+                message  : true,
+                createdAt: true,
+            }
+        }
+    }
     const post = await prisma.post.findUnique({
         where: {
             id: postId
         },
-        include: {
-            images: true, 
-            user  : true,
-        }
+        select: baseSelect
     });
 
     if (!post) throw new Error("Post not found.");
@@ -130,8 +163,38 @@ async function getReviewQueuePosts(page = 1, pageSize = 10) {
         },
     }
 };
+
+/**
+ * Function to update the status of a post
+ * @param {*} req 
+ * @returns 
+ */
+async function updateStatus(req) {
+    const { user }             = req;
+    const { status, feedback } = req.body;
+    const postId               = req.params.id;
+    const post = await prisma.post.update( {
+        where: {
+            id: postId
+        },
+        data: {
+            status,
+            feedback,
+            histories : {
+                create: {
+                    status   : status,
+                    message  : feedback,
+                    changedBy: user.id
+                }
+            }
+        }
+    });
+    return post;   
+}
+
 export {
     createPost,
     getPost,
-    getReviewQueuePosts
+    getReviewQueuePosts,
+    updateStatus
 }

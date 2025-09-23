@@ -106,6 +106,8 @@ enum PostStatus {
   UNDER_REVIEW
   APPROVED
   MORE_INFO_NEEDED
+  REJECTED
+  UPDATED
 }
 
 enum Role {
