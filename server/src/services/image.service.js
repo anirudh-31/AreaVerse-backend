@@ -38,7 +38,22 @@ async function generateDownloadURL(filePath){
     return data.signedUrl;
 }
 
+
+/**
+ * Function to delete given images from storage
+ * @param {Array} images 
+ * @returns 
+ */
+async function removePostImages(images){
+    const { error: deleteError } = await client.storage.from('post-images').remove(images)
+    if(deleteError) {
+        throw new Error(deleteError)
+    }
+    return true
+}
+
 export {
     generateUploadURL,
-    generateDownloadURL
+    generateDownloadURL,
+    removePostImages
 }

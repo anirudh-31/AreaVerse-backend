@@ -1,4 +1,4 @@
-import { createPost, getPost, getReviewQueuePosts, updateStatus } from "../services/post.service.js"
+import { createPost, getPost, getReviewQueuePosts, updatePost, updateStatus } from "../services/post.service.js"
 
 async function createNewPost(req, res){
     try{
@@ -46,9 +46,14 @@ async function updatePostStatus(req, res){
     }
 }
 
+async function updateReport(req, res){
+    await updatePost(req, res);
+}
+
 export {
     createNewPost,
     getReport,
     fetchReviewQueue,
-    updatePostStatus
+    updatePostStatus,
+    updateReport
 }

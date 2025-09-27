@@ -1,5 +1,5 @@
 import { prisma } from '../prisma/client.prisma.js';
-import { generateDownloadURL } from './image.service.js';
+import { generateDownloadURL, removePostImages } from './image.service.js';
 
 /**
  * Function to create a new post.
@@ -95,7 +95,9 @@ async function getPost(postId, user){
 
     if (!post) throw new Error("Post not found.");
 
-    if ( post.status !== 'APPROVED' && post.user_id !== user.id && user.role !== 'ADMIN') {
+    const isAuthorized = post.status === 'APPROVED' || post.user.id === user.id || user.role === 'ADMIN';
+
+    if ( !isAuthorized ) {
         throw new Error("You are not authorized to view this post as of now.");
     }
 
@@ -122,7 +124,7 @@ async function getReviewQueuePosts(page = 1, pageSize = 10) {
         prisma.post.findMany({
             where: {
                 status: {
-                    in: ['REPORTED', 'UNDER_REVIEW'],
+                    in: ['REPORTED', 'UNDER_REVIEW', 'UPDATED'],
                 },
             },
             select: {
@@ -147,7 +149,7 @@ async function getReviewQueuePosts(page = 1, pageSize = 10) {
         prisma.post.count({
             where: {
                 status : {
-                    in : ['REPORTED', 'UNDER_REVIEW']
+                    in : ['REPORTED', 'UNDER_REVIEW', 'UPDATED']
                 }
             }
         }),
@@ -192,9 +194,89 @@ async function updateStatus(req) {
     return post;   
 }
 
+
+async function updatePost(req, res){
+    try {
+        const { id } = req.params;
+        const userId = req.user.id;
+        const { title, description, images } = req.body;
+
+        const post =  await prisma.post.findUnique({
+            where : {
+                id: id,
+            },
+            include: {
+                images: {
+                    where: {
+                        url: {
+                            notIn: images
+                        }
+                    }
+                }
+            }
+        });
+
+
+        if(!post){
+            return res.status(404).json({
+                error: "Post not found"
+            });
+        }
+
+        if(post.user_id !== userId){
+            return res.status(403).json({
+                error: "You are not authorized to update this post!"
+            });
+        }
+
+        if(post.status !== 'MORE_INFO_NEEDED'){
+            return res.status(400).json({
+                error: "The post cannot be edited at this stage."
+            });
+        }
+        if(post?.images?.length > 0) {
+            const imagesToDelete = post?.images?.map((image) => image.url);
+            await removePostImages(imagesToDelete);
+        }
+
+        const updatedPost = await prisma.post.update({
+            where: {
+                id: post.id
+            },
+            data: {
+                title: title,
+                description: description,
+                status: 'UPDATED',
+                images: {
+                    deleteMany: {
+                    },
+                    create : images?.map((image) => ({url: image})) || []
+                }
+            } 
+        });
+
+        await prisma.posthistory.create({
+            data: {
+                postId: post.id,
+                status: 'UPDATED',
+                changedBy: userId,
+                message: 'User updated post (title/description/images) and resubmitted'
+            }
+        })
+
+        res.status(200).json({
+            message: "Post updated successfully."
+        })
+    } catch (error) {
+        return res.status(500).json({
+            error: error.message || "Internal Server Error."
+        })
+    }
+}
 export {
     createPost,
     getPost,
     getReviewQueuePosts,
-    updateStatus
+    updateStatus,
+    updatePost
 }
