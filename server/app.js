@@ -7,6 +7,7 @@ import cookieParser from "cookie-parser";
 import { userRouter } from "./src/routes/user.route.js";
 import imageRouter from "./src/routes/image.route.js";
 import postRouter from "./src/routes/post.route.js";
+import { searchRouter } from "./src/routes/search.route.js";
 
 dotenv.config();
 const app  = express();
@@ -34,7 +35,7 @@ app.use("/auth"  , authRouter );
 app.use("/user"  , userRouter );
 app.use("/image" , imageRouter);
 app.use("/report", postRouter );
-
+app.use("/search", searchRouter);
 // Example protected route
 app.get("/me", authenticateToken, (req, res) => {
   res.json({ message: "Welcome!", user: req.user });

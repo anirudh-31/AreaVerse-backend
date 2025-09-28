@@ -105,7 +105,7 @@ async function registerNewUser(data) {
 
 /**
  * Function to allow the user to login to the platform
- * @param {Strin} userEmailOrUserName 
+ * @param {String} userEmailOrUserName 
  * @param {String} password 
  * @returns A Payload containing the signed auth token and the necessary user information.
  */

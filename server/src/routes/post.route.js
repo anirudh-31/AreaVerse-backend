@@ -4,11 +4,11 @@ import { createNewPost, fetchReviewQueue, getReport, updatePostStatus, updateRep
 
 
 const postRouter = express.Router();
-postRouter.post("/create-new-report", authenticateToken, createNewPost);
-postRouter.get("/review-queue"      , authenticateToken, requireAdmin, fetchReviewQueue);
-postRouter.get("/:id"               , authenticateToken, getReport);
-postRouter.patch("/:id"             , authenticateToken, updateReport);
-postRouter.patch("/:id/status"      , requireAdmin     , updatePostStatus);
+postRouter.post("/create-new-report", authenticateToken, createNewPost); // route to create new report
+postRouter.get("/review-queue"      , authenticateToken, requireAdmin, fetchReviewQueue); // admin only route to get reports that need to be reviewed.
+postRouter.get("/:id"               , authenticateToken, getReport); // route to get a report
+postRouter.patch("/:id"             , authenticateToken, updateReport); // route to update a report
+postRouter.patch("/:id/status"      , requireAdmin     , updatePostStatus); // route to update the status of a report
 
 
 export default postRouter;
