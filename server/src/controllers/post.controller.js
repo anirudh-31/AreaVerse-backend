@@ -1,4 +1,4 @@
-import { createPost, getPost, getReviewQueuePosts, updatePost, updateStatus } from "../services/post.service.js"
+import { createPost, getPost, getPostsByUser, getReviewQueuePosts, updatePost, updateStatus } from "../services/post.service.js"
 
 async function createNewPost(req, res){
     try{
@@ -50,10 +50,20 @@ async function updateReport(req, res){
     await updatePost(req, res);
 }
 
+async function getPostsByUserId(req, res){
+    try {
+        const response = await getPostsByUser(req);
+        res.status(200).json(response)
+    } catch (error) {
+        res.status(500).json({error: error.message})
+    }
+}
+
 export {
     createNewPost,
     getReport,
     fetchReviewQueue,
     updatePostStatus,
-    updateReport
+    updateReport,
+    getPostsByUserId
 }

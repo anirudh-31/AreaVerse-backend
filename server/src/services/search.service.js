@@ -3,11 +3,12 @@ import { prisma } from '../prisma/client.prisma.js';
 
 async function getSearchResults(req, res){
     try {
+        
         const { query, type, page = 1, limit = 10} = req.query;
 
         if(!query){
             return res.status(400).json({
-                error: "Query parameter `query` is required."
+                error: "query parameter `query` is required."
             });
         }
 
@@ -35,9 +36,10 @@ async function getSearchResults(req, res){
                                 }
                               ]   
                             },
-                            select: { id: true, last_name: true, first_name: true, username: true},
-                            skip,
-                            take
+                    orderBy: [{first_name: 'asc'}, {last_name:'asc'}, {username: 'asc'}],
+                    select: { id: true, last_name: true, first_name: true, username: true},
+                    skip,
+                    take
                 }),
                 // finding posts
                 prisma.post.findMany({
@@ -60,6 +62,9 @@ async function getSearchResults(req, res){
                             }
                         ],
                         status: 'APPROVED'
+                    },
+                    orderBy: {
+                        createdAt: 'desc'
                     },
                     select: {id: true, title: true, category: true, type: true, user: {select: {username: true}}},
                     skip,
@@ -104,9 +109,10 @@ async function getSearchResults(req, res){
                                 }
                               ]   
                             },
-                            select: { id: true, last_name: true, first_name: true, username: true},
-                            skip,
-                            take
+                    orderBy: [{first_name: 'asc'}, {last_name:'asc'}, {username: 'asc'}],
+                    select: { id: true, last_name: true, first_name: true, username: true},
+                    skip,
+                    take
                 })
             results = [
                 ...users.map((user) => ({source: 'user', ...user}))
@@ -132,6 +138,9 @@ async function getSearchResults(req, res){
                             }
                         ],
                         status: 'APPROVED'
+                    },
+                    orderBy: {
+                        createdAt: 'desc'
                     },
                     select: {id: true, title: true, category: true, type: true, user: {select: {username: true}}},
                     skip,

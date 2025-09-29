@@ -44,7 +44,12 @@ async function getMe(userId){
     };
 }
 
-async function getPostsByUser(req){
+/**
+ * Function to get posts created by a user
+ * @param {*} req 
+ * @returns 
+ */
+async function getMyPosts(req){
     const { user } = req;
     const { id   } = req.params;
     const page     = parseInt(req.query.page)  || 1;
@@ -100,7 +105,49 @@ async function getPostsByUser(req){
     }
 
 }
+
+async function getUser(userId){
+    const userDetails = await prisma.user.findUnique({
+        where  : {id: userId},
+        select : {
+            id           : true,
+            first_name   : true,
+            last_name    : true,
+            username     : true,
+            profession   : true,
+            createdAt    : true,
+            dateOfBirth  : true,
+            isVerified   : true,
+            neighborhood : {
+                                select : {
+                                    name   : true,
+                                    state  : true,
+                                    city   : true,
+                                    country: true
+                                }  
+                            }
+        },
+    })
+    if (!userDetails){
+        throw new Error("User not found");
+    }
+
+    const postCount = await prisma.post.count({
+        where: {
+            user_id : userId,
+            status: 'APPROVED'
+        }
+    })
+
+    return {
+        ...userDetails,
+        postCount,
+        followers: 0,
+        following: 0
+    };
+}
 export {
     getMe,
-    getPostsByUser
+    getMyPosts,
+    getUser
 }

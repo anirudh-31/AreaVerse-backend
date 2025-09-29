@@ -1,3 +1,4 @@
+import { error } from 'console';
 import { prisma } from '../prisma/client.prisma.js';
 import { generateDownloadURL, removePostImages } from './image.service.js';
 
@@ -273,10 +274,66 @@ async function updatePost(req, res){
         })
     }
 }
+
+async function getPostsByUser(req){
+    try{
+       const userId          = req.params.id;
+       const { page = 1, limit = 3 } = req.query;
+       const skip = (Number(page) - 1 ) * Number(limit)
+       const posts = await prisma.post.findMany({
+        where: {
+            user_id: userId
+        },
+        select:{
+            id: true,
+            title: true,
+            images: {
+                select: {
+                    url: true,
+                },
+                take: 1
+            }
+        },
+        skip,
+        take: Number(limit),
+        orderBy: {
+            createdAt : 'desc' 
+        }
+       })
+       const totalPosts = await prisma.post.count({
+        where: {
+            user_id: userId
+        }
+       })
+       const postsWithUrls = await Promise.all(
+            posts.map(async (post) => {
+            const imagesWithUrls = await Promise.all(
+                post.images.map(async (img) => {
+                const data = await generateDownloadURL(img.url); // 1 hr expiry
+                return {
+                    ...img,
+                    url: data || null,
+                };
+                })
+            );
+            return { ...post, images: imagesWithUrls };
+            })
+        );
+       return {
+        posts: postsWithUrls,
+        total: totalPosts,
+        page: Number(page),
+        totalPages: Math.ceil(totalPosts / Number(limit))
+       }
+    }catch(error){
+        console.log(error)
+    }
+}
 export {
     createPost,
     getPost,
     getReviewQueuePosts,
     updateStatus,
-    updatePost
+    updatePost,
+    getPostsByUser
 }
