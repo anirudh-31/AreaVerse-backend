@@ -5,7 +5,7 @@ async function getSearchResults(req, res){
     try {
         
         const { query, type, page = 1, limit = 10} = req.query;
-
+        console.log(query, type, page, limit)
         if(!query){
             return res.status(400).json({
                 error: "query parameter `query` is required."

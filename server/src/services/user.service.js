@@ -1,4 +1,5 @@
 import { prisma } from "../prisma/client.prisma.js";
+import { getFollowStats } from "./follow.service.js";
 
 /**
  * Function to get the users profile information
@@ -37,9 +38,10 @@ async function getMe(userId){
             user_id : userId
         }
     })
-
+    const followStats = await getFollowStats(userId)
     return {
         ...userDetails,
+        ...followStats,
         postCount
     };
 }
@@ -138,12 +140,11 @@ async function getUser(userId){
             status: 'APPROVED'
         }
     })
-
+    const followStats = await getFollowStats(userId)
     return {
         ...userDetails,
         postCount,
-        followers: 0,
-        following: 0
+        ...followStats
     };
 }
 export {

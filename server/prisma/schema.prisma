@@ -30,6 +30,8 @@ model user {
   refreshTokens     refreshtoken[]
   posts             post[]
   postEdits         posthistory[]
+  followers         follow[]      @relation("UserFollowers")
+  following         follow[]      @relation("UserFollowing")
 }
 
 model neighborhood {
@@ -88,6 +90,16 @@ model posthistory {
   user      user       @relation(fields: [changedBy], references: [id])
   message   String?
   createdAt DateTime   @default(now())
+}
+
+model follow{
+  id          String   @id @default(uuid())
+  followerId  String
+  followingId String
+  follower    user     @relation("UserFollowing", fields: [followerId], references: [id])
+  following   user     @relation("UserFollowers", fields: [followingId], references: [id])
+  createdAt   DateTime @default(now())
+  @@unique([followerId, followingId])
 }
 
 enum Severity{
