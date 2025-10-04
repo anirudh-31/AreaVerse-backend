@@ -108,7 +108,7 @@ async function getMyPosts(req){
 
 }
 
-async function getUser(userId){
+async function getUser(userId, requestorID){
     const userDetails = await prisma.user.findUnique({
         where  : {id: userId},
         select : {
@@ -140,11 +140,21 @@ async function getUser(userId){
             status: 'APPROVED'
         }
     })
+    const following   = await prisma.follow.count({
+        where: {
+            followingId: userId,
+            followerId : requestorID,
+        }
+    })
+    
+    const isFollowingUser = following === 1;
+    
     const followStats = await getFollowStats(userId)
     return {
         ...userDetails,
         postCount,
-        ...followStats
+        ...followStats,
+        isFollowingUser
     };
 }
 export {

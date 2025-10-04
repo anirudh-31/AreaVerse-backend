@@ -22,7 +22,8 @@ async function getUserPosts(req, res){
 async function getUserDetails(req, res){
     try {
         const userId = req.params.id;
-        const userDetails = await getUser(userId);
+        const { id } = req.user;
+        const userDetails = await getUser(userId, id);
         res.status(200).json(userDetails)
     } catch (error) {
         res.status(400).json({error: error.message});

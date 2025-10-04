@@ -115,10 +115,95 @@ async function getFollowStats(userId){
     }
 }
 
-console.log(await getFollowStats("9b73ff3e-061a-4a87-8ee2-c961cedf3603"));
+async function getFollowers(req, res){
+    const { id }                = req.params;
+    const { page = 1, limit=5 } = req.query;
+    const skip = ( Number(page) - 1 ) * Number(limit);
+    const take = Number(limit);
 
+    const followers = await prisma.follow.findMany({
+        where: {
+            followingId: id 
+        },
+        include: {
+            follower: {
+                select : {
+                    username  : true,
+                    first_name: true,
+                    last_name : true,
+                    id        : true
+                }
+            }
+        },
+        orderBy: {
+            createdAt: 'desc'
+        },
+        skip,
+        take
+    });
+
+    const totalFollowers = await prisma.follow.count({
+        where: {
+            followingId: id
+        }
+    });
+
+    res.status(200).json({
+        followers,
+        pagination: {
+            page      : Number(page),
+            lmitt     : Number(limit),
+            totalPages:  Math.ceil(totalFollowers / limit)
+        }
+    });
+}
+
+async function getFollowing(req, res) {
+    const { id }                = req.params;
+    const { page = 1, limit=5 } = req.query;
+    const skip = ( Number(page) - 1 ) * Number(limit);
+    const take = Number(limit);
+
+    const following = await prisma.follow.findMany({
+        where: {
+            followerId: id 
+        },
+        include: {
+            following: {
+                select : {
+                    username  : true,
+                    first_name: true,
+                    last_name : true,
+                    id        : true
+                }
+            }
+        },
+        orderBy: {
+            createdAt: 'desc'
+        },
+        skip,
+        take
+    });
+
+    const totalFollowing = await prisma.follow.count({
+        where: {
+            followerId: id
+        }
+    });
+
+    res.status(200).json({
+        following,
+        pagination: {
+            page      : Number(page),
+            lmitt     : Number(limit),
+            totalPages: Math.ceil(totalFollowing / limit)
+        }
+    });
+}
 export {
     follow,
     unfollow,
+    getFollowers,
+    getFollowing,
     getFollowStats
 }
