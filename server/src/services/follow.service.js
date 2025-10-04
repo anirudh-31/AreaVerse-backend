@@ -9,7 +9,7 @@ async function follow(req, res){
     const { user }       = req;
     const userIdToFollow = req.params.id;
     const userIdFollowing= user.id;
-    console.log({userIdFollowing, userIdToFollow})
+    
     if (userIdFollowing ===  userIdToFollow){
         res.status(200).json({error: "You cannot follow yourself!"})
     }
@@ -55,7 +55,8 @@ async function follow(req, res){
             followerId : userIdFollowing 
         }
     })
-    console.log(follows)
+    
+    
 
     res.status(200).json({
         message: "You are now following the user."
