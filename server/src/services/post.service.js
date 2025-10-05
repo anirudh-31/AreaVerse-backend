@@ -1,6 +1,7 @@
 import { error } from 'console';
 import { prisma } from '../prisma/client.prisma.js';
 import { generateDownloadURL, removePostImages } from './image.service.js';
+import { getLikesByPostId } from './like.service.js';
 
 /**
  * Function to create a new post.
@@ -108,9 +109,13 @@ async function getPost(postId, user){
         }))
     );
 
+    const likesData = await getLikesByPostId(postId, user.id);
     return {
         ...post,
-        images: signedImageURLs
+        images: signedImageURLs,
+        likes: {
+            ...likesData
+        }
     };
 }
 

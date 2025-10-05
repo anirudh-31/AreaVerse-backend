@@ -9,6 +9,7 @@ import imageRouter from "./src/routes/image.route.js";
 import postRouter from "./src/routes/post.route.js";
 import { searchRouter } from "./src/routes/search.route.js";
 import { followRouter } from "./src/routes/follow.route.js";
+import likeRouter from "./src/routes/like.router.js";
 
 dotenv.config();
 const app  = express();
@@ -38,7 +39,7 @@ app.use("/image" , imageRouter);
 app.use("/report", postRouter );
 app.use("/search", searchRouter);
 app.use("/follow", followRouter);
-
+app.use("/like"  , likeRouter);
 
 
 app.get("/me", authenticateToken, (req, res) => {

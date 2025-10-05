@@ -86,6 +86,7 @@ async function getSearchResults(req, res){
                 })
             ])
             
+            
             const formattedResults = [
                                         ...users.map(u => ({ source: "user", ...u })),
                                         ...posts.map(p => ({ source: "post", ...p })),

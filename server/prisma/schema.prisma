@@ -32,6 +32,7 @@ model user {
   postEdits         posthistory[]
   followers         follow[]      @relation("UserFollowers")
   following         follow[]      @relation("UserFollowing")
+  likes             like[]
 }
 
 model neighborhood {
@@ -70,6 +71,7 @@ model post {
   user        user       @relation(fields: [user_id], references: [id])
   images      image[]
   histories   posthistory[]
+  likes       like[]
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 }
@@ -102,6 +104,16 @@ model follow{
   @@unique([followerId, followingId])
 }
 
+model like{
+  id        String   @id @default(uuid())
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  post      post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId    String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId])
+}
 enum Severity{
   LOW
   MEDIUM
