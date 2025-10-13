@@ -69,6 +69,7 @@ async function getPost(postId, user){
                     last_name: true,
                 }
             },
+            commentCount: true,
         }
     const isPriveleged = (
         user.role === 'ADMIN' ||
