@@ -94,19 +94,19 @@ async function getComments(req, res){
                     username: true
                 }
             },
-            replies: {
-                include: {
-                    user: {
-                        select: {
-                            id      : true,
-                            username: true
-                        }
-                    }
-                },
-                orderBy: {
-                    createdAt: 'asc'
-                }
-            }
+            // replies: {
+            //     include: {
+            //         user: {
+            //             select: {
+            //                 id      : true,
+            //                 username: true
+            //             }
+            //         }
+            //     },
+            //     orderBy: {
+            //         createdAt: 'asc'
+            //     }
+            // }
         },
         orderBy: {
             createdAt: "desc"
@@ -132,10 +132,53 @@ async function getComments(req, res){
             totalPages: Math.ceil( totalComments / limitResults)
         }
     });
+}
 
-    
+async function getRepliesOnComment(req, res){
+    const { page = 1, limit = 3} = req.query;
+    const { parentId }           = req.params;
+
+    const pageNumber   = Number(page);
+    const limitResults = Number(limit)
+    const skip         = ( pageNumber - 1 ) * Number(limitResults);
+
+    const replies = await prisma.comment.findMany({
+        where: {
+            parentId
+        },
+        include: {
+            user : {
+                select : {
+                    id: true,
+                    username: true
+                }
+            }
+        },
+        orderBy : {
+            createdAt : 'desc'
+        },
+        skip,
+        take: limitResults
+    });
+    const totalComments = await prisma.comment.count({
+        where : {
+            parentId
+        }
+    });
+
+    res.status(200).send({
+        replies,
+        pagination: {
+            totalComments,
+            totalPages: Math.ceil( totalComments / limitResults),
+            page,
+            limit,
+        }
+    })
+
 }
 export {
     createComment,
-    getComments
+    getComments,
+    getRepliesOnComment
 }
