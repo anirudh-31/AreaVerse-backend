@@ -11,7 +11,7 @@ async function toggleLike(req, res){
     const { id } = req.user;
     const userId = id;
     const postId = req.params.id;
-    console.log(userId)
+    
     if(!userId || !postId) return res.status(400).json({
         error: "userId and postId are required!"
     });

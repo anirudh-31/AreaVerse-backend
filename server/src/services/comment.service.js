@@ -20,7 +20,12 @@ async function createComment(req, res){
                 parentId
             },
             include: {
-                user: true
+                user: {
+                    select: {
+                        id: true,
+                        username: true 
+                    }
+                }
             }
         })
 
@@ -28,7 +33,7 @@ async function createComment(req, res){
         // Else update the comment count on the post
         let count = null;
         if (parentId){
-            await transaction.comment.update({
+            const data = await transaction.comment.update({
                 where: {
                     id: parentId
                 },
@@ -36,8 +41,12 @@ async function createComment(req, res){
                     replyCount: {
                         increment: 1
                     }
+                },
+                select: {
+                    replyCount: true
                 }
             })
+            count = data.replyCount;
         }else{
             const data = await transaction.post.update({
                 where: {
