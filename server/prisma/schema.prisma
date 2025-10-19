@@ -27,6 +27,7 @@ model user {
   neighborhood      neighborhood? @relation(fields: [neighborhoodId], references: [id])
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+
   refreshTokens     refreshtoken[]
   posts             post[]
   postEdits         posthistory[]
@@ -34,6 +35,7 @@ model user {
   following         follow[]      @relation("UserFollowing")
   likes             like[]
   Comments          comment[]
+  engagements       engagement[]
 }
 
 model neighborhood {
@@ -68,15 +70,22 @@ model post {
   category     String
   status       PostStatus    @default(REPORTED)
   feedback     String?
+
   user_id      String
   user         user          @relation(fields: [user_id], references: [id])
+  
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  commentCount Int           @default(0)
+  viewCount    Int           @default(0)
+  uniqueViews  Int           @default(0)
+
+  engagements  engagement[]
   images       image[]
   histories    posthistory[]
   likes        like[]
   comments     comment[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  commentCount Int           @default(0)
 }
 
 model image {
@@ -138,6 +147,20 @@ model comment{
   @@index([userId])
 }
 
+model engagement {
+  id        String         @id @default(uuid())
+  userId    String?
+  postId    String
+  type      EngagementType
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @default(now())
+
+  user user? @relation(fields: [userId], references: [id])
+  post post  @relation(fields: [postId], references: [id])
+
+  @@unique([userId, postId, type])
+}
+
 enum Severity{
   LOW
   MEDIUM
@@ -168,4 +191,11 @@ enum AuthType {
   LOCAL
   GOOGLE
   FACEBOOK
+}
+
+enum EngagementType {
+  VIEW
+  LIKE
+  COMMENT
+  SHARE
 }

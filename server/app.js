@@ -11,6 +11,8 @@ import { searchRouter } from "./src/routes/search.route.js";
 import { followRouter } from "./src/routes/follow.route.js";
 import likeRouter from "./src/routes/like.router.js";
 import  commentRouter  from "./src/routes/comment.route.js";
+import { engagementRouter } from "./src/routes/engagement.route.js";
+import { feedRouter } from "./src/routes/feed.route.js";
 
 dotenv.config();
 const app  = express();
@@ -34,14 +36,16 @@ app.use(cors({
 app.use(cookieParser());
 
 // ROUTES
-app.use("/auth"   , authRouter   );
-app.use("/user"   , userRouter   );
-app.use("/image"  , imageRouter  );
-app.use("/report" , postRouter   );
-app.use("/search" , searchRouter );
-app.use("/follow" , followRouter );
-app.use("/like"   , likeRouter   );
-app.use("/comment", commentRouter);
+app.use("/auth"      , authRouter      );
+app.use("/user"      , userRouter      );
+app.use("/image"     , imageRouter     );
+app.use("/report"    , postRouter      );
+app.use("/search"    , searchRouter    );
+app.use("/follow"    , followRouter    );
+app.use("/like"      , likeRouter      );
+app.use("/comment"   , commentRouter   );
+app.use("/engagement", engagementRouter);
+app.use("/feed"      , feedRouter      );
 
 app.get("/me", authenticateToken, (req, res) => {
   res.json({ message: "Welcome!", user: req.user });
