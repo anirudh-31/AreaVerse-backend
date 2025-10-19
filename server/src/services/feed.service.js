@@ -88,27 +88,22 @@ async function getHomeFeed(userId, page=1, limit=10){
     
     // tracking new views
     await prisma.$transaction(
-        paginatedPosts.map( post => {
-            try{
-                prisma.engagement.upsert({
-                    where : {
-                        userId_postId_type: {
-                            userId,
-                            postId: post.id,
-                            type  : 'VIEW' 
-                        }
-                    },
-                    update: {},
-                    create: {
-                        userId: userId,
+        paginatedPosts.map(post =>
+            prisma.engagement.upsert({
+                where: {
+                    userId_postId_type: {
+                        userId,
                         postId: post.id,
-                        type  : 'VIEW',
-                    }
-                })
-            }catch(err){
-
-            }
-        }
+                        type: 'VIEW',
+                    },
+                },
+                update: {},
+                create: {
+                    userId,
+                    postId: post.id,
+                    type: 'VIEW',
+                },
+            })
         )
     );
 
