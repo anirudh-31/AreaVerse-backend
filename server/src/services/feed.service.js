@@ -72,7 +72,7 @@ async function getHomeFeed(userId, page=1, limit=10){
     const paginatedPosts = scoredPosts.slice(0, limit);
     
     for (const post of paginatedPosts){
-        if(post.images && post.images.length > 0){
+        if(post.images && post.images.length  > 0){
             const signedUrls = await Promise.all(
                 post.images.map( async (img) => {
                     const data = await generateDownloadURL(img.url);
@@ -97,7 +97,13 @@ async function getHomeFeed(userId, page=1, limit=10){
                         type: 'VIEW',
                     },
                 },
-                update: {},
+                update: {
+                    userId_postId_type: {
+                        userId,
+                        postId: post.id,
+                        type: 'VIEW',
+                    },
+                },
                 create: {
                     userId,
                     postId: post.id,
