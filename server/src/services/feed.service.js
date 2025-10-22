@@ -98,11 +98,9 @@ async function getHomeFeed(userId, page=1, limit=10){
                     },
                 },
                 update: {
-                    userId_postId_type: {
                         userId,
                         postId: post.id,
                         type: 'VIEW',
-                    },
                 },
                 create: {
                     userId,
