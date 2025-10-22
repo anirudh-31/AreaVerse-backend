@@ -1,7 +1,7 @@
 import { prisma } from '../prisma/client.prisma.js';
 import { generateDownloadURL } from './image.service.js';
 
-async function getHomeFeed(userId, page=1, limit=10){
+async function getHomeFeed(userId, page=1, limit=10, res){
     const skip = ( page - 1 ) * limit;
 
     const viewedPosts = await prisma.engagement.findMany({
@@ -110,8 +110,32 @@ async function getHomeFeed(userId, page=1, limit=10){
             })
         )
     );
+    res.status(200).json({
+            success: true,
+            data   : paginatedPosts
+        });
 
-    return paginatedPosts;
+    (async () => {
+        try {
+            await Promise.all(
+            paginatedPosts.map(post =>
+                prisma.engagement.upsert({
+                where: {
+                    userId_postId_type: {
+                    userId,
+                    postId: post.id,
+                    type: 'VIEW',
+                    },
+                },
+                update: {},
+                create: { userId, postId: post.id, type: 'VIEW' },
+                })
+            )
+            );
+        } catch (err) {
+            console.error('Engagement logging failed:', err);
+        }
+        })();
 }
 
 export {
